@@ -40,7 +40,7 @@ class _IndexPageState extends State<IndexPage> {
   int currentIndex = 0;
   var currentPage;
 
-  void initState() { 
+  void initState() {
     currentPage = tabBodies[currentIndex];
     super.initState();
   }
@@ -61,7 +61,7 @@ class _IndexPageState extends State<IndexPage> {
             });
           },
         ),
-        body:currentPage,
+        body: currentPage,
       ),
     );
   }
