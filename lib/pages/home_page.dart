@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
 import '../service/service_method.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,16 +13,34 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  int page = 1;
+  List<Map> hotGoodsList = [];
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    print('[log]:HomePage');
+    _getHotGoods();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    var formData = {
+      'lon': '115.02932',
+      'lat': '35.76189',
+    };
     return Container(
       child: Scaffold(
           appBar: AppBar(
             title: Text('百姓生活+'),
           ),
           body: FutureBuilder(
-            future: getHomePageContent(),
+            future: request('homePageContent', formData: formData),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 var data = json.decode(snapshot.data.toString());
@@ -30,9 +48,15 @@ class _HomePageState extends State<HomePage> {
                 List<Map> swiper = (_date['slides'] as List).cast();
                 List<Map> navgatorList = (_date['category'] as List).cast();
                 List<Map> recommendList = (_date['recommend'] as List).cast();
+                List<Map> floor1 = (_date['floor1'] as List).cast();
+                List<Map> floor2 = (_date['floor2'] as List).cast();
+                List<Map> floor3 = (_date['floor3'] as List).cast();
                 String adPicture = _date['advertesPicture']['PICTURE_ADDRESS'];
                 String leaderPhone = _date['shopInfo']['leaderPhone'];
                 String leaderImage = _date['shopInfo']['leaderImage'];
+                String floor1Title = _date['floor1Pic']['PICTURE_ADDRESS'];
+                String floor2Title = _date['floor2Pic']['PICTURE_ADDRESS'];
+                String floor3Title = _date['floor3Pic']['PICTURE_ADDRESS'];
                 return SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
@@ -51,7 +75,20 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Recommend(
                         recommendList: recommendList,
-                      )
+                      ),
+                      FloorTitle(prctureAddress: floor1Title),
+                      FloorContent(
+                        floorGoodList: floor1,
+                      ),
+                      FloorTitle(prctureAddress: floor2Title),
+                      FloorContent(
+                        floorGoodList: floor2,
+                      ),
+                      FloorTitle(prctureAddress: floor3Title),
+                      FloorContent(
+                        floorGoodList: floor3,
+                      ),
+                      _hotGoods(),
                     ],
                   ),
                 );
@@ -64,6 +101,89 @@ class _HomePageState extends State<HomePage> {
               }
             },
           )),
+    );
+  }
+
+  void _getHotGoods() {
+    var formData = {
+      'page': page,
+    };
+    request('homePageBelowConten', formData: formData).then((val) {
+      var data = json.decode(val.toString());
+      List<Map> newGoodsList = (data['data'] as List).cast();
+      setState(() {
+        hotGoodsList.addAll(newGoodsList);
+        page++;
+      });
+    });
+  }
+
+  Widget _hotTitle() => Container(
+        margin: EdgeInsets.only(top: 10.0),
+        alignment: Alignment.center,
+        color: Colors.transparent,
+        child: Text('火爆专区'),
+      );
+
+  Widget _wrapList() {
+    if (hotGoodsList.isNotEmpty) {
+      List<Widget> listWidget = hotGoodsList.map((val) {
+        return InkWell(
+          onTap: () {},
+          child: Container(
+            width: ScreenUtil().setWidth(372),
+            color: Colors.white,
+            padding: EdgeInsets.all(5.0),
+            margin: EdgeInsets.only(bottom: 3.0),
+            child: Column(
+              children: <Widget>[
+                Image.network(
+                  val['image'],
+                  width: ScreenUtil().setWidth(370),
+                ),
+                Text(
+                  val['name'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.pink,
+                    fontSize: ScreenUtil().setSp(26),
+                  ),
+                ),
+                Row(
+                  children: <Widget>[
+                    Text(
+                      "￥${val['mallPrice']}",
+                    ),
+                    Text(
+                      "￥${val['price']}",
+                      style: TextStyle(
+                        color: Colors.black26,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList();
+
+      return Wrap(
+        spacing: 2,
+        children: listWidget,
+      );
+    } else {
+      return Text('');
+    }
+  }
+
+  Widget _hotGoods() {
+    return Container(
+      child: Column(
+        children: <Widget>[_hotTitle(), _wrapList()],
+      ),
     );
   }
 }
@@ -186,7 +306,7 @@ class Recommend extends StatelessWidget {
   Widget _titleWidget() {
     return Container(
       alignment: Alignment.centerLeft,
-      padding: EdgeInsets.fromLTRB(10.0, 2.0, 0, 5.0),
+      padding: EdgeInsets.fromLTRB(10.0, 5.0, 0, 5.0),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -207,7 +327,7 @@ class Recommend extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: Container(
-        height: ScreenUtil().setHeight(350),
+        height: ScreenUtil().setHeight(330),
         width: ScreenUtil().setWidth(250),
         padding: EdgeInsets.all(8.0),
         decoration: BoxDecoration(
@@ -242,7 +362,7 @@ class Recommend extends StatelessWidget {
 
   Widget _recommedList() {
     return Container(
-      height: ScreenUtil().setHeight(350),
+      height: ScreenUtil().setHeight(330),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: recommendList.length,
@@ -263,6 +383,73 @@ class Recommend extends StatelessWidget {
           _titleWidget(),
           _recommedList(),
         ],
+      ),
+    );
+  }
+}
+
+class FloorTitle extends StatelessWidget {
+  final String prctureAddress;
+
+  FloorTitle({Key key, this.prctureAddress}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10.0),
+      child: Image.network(prctureAddress),
+    );
+  }
+}
+
+class FloorContent extends StatelessWidget {
+  final List floorGoodList;
+
+  FloorContent({Key key, this.floorGoodList}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          _firstRow(),
+          _otherGoods(),
+        ],
+      ),
+    );
+  }
+
+  Widget _firstRow() {
+    return Row(
+      children: <Widget>[
+        _goodItem(floorGoodList[0]),
+        Column(
+          children: <Widget>[
+            _goodItem(floorGoodList[1]),
+            _goodItem(floorGoodList[2]),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _otherGoods() {
+    return Row(
+      children: <Widget>[
+        _goodItem(floorGoodList[3]),
+        _goodItem(floorGoodList[4]),
+      ],
+    );
+  }
+
+  Widget _goodItem(Map goods) {
+    return Container(
+      width: ScreenUtil().setWidth(375),
+      child: InkWell(
+        onTap: () {
+          print('点击了楼层商品');
+        },
+        child: Image.network(goods['image']),
       ),
     );
   }
