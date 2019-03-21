@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
 import '../service/service_method.dart';
 
 class HomePage extends StatefulWidget {
-  final Widget child;
-
-  HomePage({Key key, this.child}) : super(key: key);
-
   _HomePageState createState() => _HomePageState();
 }
 
@@ -17,16 +14,10 @@ class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
   int page = 1;
   List<Map> hotGoodsList = [];
+  GlobalKey<RefreshFooterState> _footerkey = GlobalKey<RefreshFooterState>();
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    print('[log]:HomePage');
-    _getHotGoods();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,40 +48,48 @@ class _HomePageState extends State<HomePage>
                 String floor1Title = _date['floor1Pic']['PICTURE_ADDRESS'];
                 String floor2Title = _date['floor2Pic']['PICTURE_ADDRESS'];
                 String floor3Title = _date['floor3Pic']['PICTURE_ADDRESS'];
-                return SingleChildScrollView(
-                  child: Column(
+                return EasyRefresh(
+                  refreshFooter: ClassicsFooter(
+                    key: _footerkey,
+                    bgColor: Colors.white,
+                    textColor: Colors.pink,
+                    moreInfoColor: Colors.pink,
+                    noMoreText: '',
+                    moreInfo: '加载中',
+                    loadReadyText: '上拉加载...',
+                  ),
+                  child: ListView(
                     children: <Widget>[
-                      SwiperDiy(
-                        swiperDateList: swiper,
-                      ),
-                      TopNavigator(
-                        navigatorList: navgatorList,
-                      ),
-                      AdBanner(
-                        adPicture: adPicture,
-                      ),
+                      SwiperDiy(swiperDateList: swiper),
+                      TopNavigator(navigatorList: navgatorList),
+                      AdBanner(adPicture: adPicture),
                       LeaderPhone(
-                        leaderImage: leaderImage,
-                        leaderPhone: leaderPhone,
-                      ),
-                      Recommend(
-                        recommendList: recommendList,
-                      ),
+                          leaderImage: leaderImage, leaderPhone: leaderPhone),
+                      Recommend(recommendList: recommendList),
                       FloorTitle(prctureAddress: floor1Title),
-                      FloorContent(
-                        floorGoodList: floor1,
-                      ),
+                      FloorContent(floorGoodList: floor1),
                       FloorTitle(prctureAddress: floor2Title),
-                      FloorContent(
-                        floorGoodList: floor2,
-                      ),
+                      FloorContent(floorGoodList: floor2),
                       FloorTitle(prctureAddress: floor3Title),
-                      FloorContent(
-                        floorGoodList: floor3,
-                      ),
+                      FloorContent(floorGoodList: floor3),
                       _hotGoods(),
                     ],
                   ),
+                  loadMore: () async {
+                    print('开始加载更多');
+                    var formData = {
+                      'page': page,
+                    };
+                    request('homePageBelowConten', formData: formData)
+                        .then((val) {
+                      var data = json.decode(val.toString());
+                      List<Map> newGoodsList = (data['data'] as List).cast();
+                      setState(() {
+                        hotGoodsList.addAll(newGoodsList);
+                        page++;
+                      });
+                    });
+                  },
                 );
               } else {
                 return Center(
@@ -102,20 +101,6 @@ class _HomePageState extends State<HomePage>
             },
           )),
     );
-  }
-
-  void _getHotGoods() {
-    var formData = {
-      'page': page,
-    };
-    request('homePageBelowConten', formData: formData).then((val) {
-      var data = json.decode(val.toString());
-      List<Map> newGoodsList = (data['data'] as List).cast();
-      setState(() {
-        hotGoodsList.addAll(newGoodsList);
-        page++;
-      });
-    });
   }
 
   Widget _hotTitle() => Container(
@@ -197,7 +182,7 @@ class SwiperDiy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: ScreenUtil().setHeight(333),
+      height: ScreenUtil().setWidth(333),
       width: ScreenUtil().setWidth(750),
       child: Swiper(
         itemBuilder: (BuildContext content, int index) {
@@ -244,9 +229,10 @@ class TopNavigator extends StatelessWidget {
       navigatorList.removeRange(10, navigatorList.length);
     }
     return Container(
-      height: ScreenUtil().setHeight(320),
+      height: ScreenUtil().setWidth(320),
       padding: EdgeInsets.all(3.0),
       child: GridView.count(
+        physics: NeverScrollableScrollPhysics(),
         crossAxisCount: 5,
         padding: EdgeInsets.all(5.0),
         children: navigatorList.map((item) {
@@ -327,7 +313,7 @@ class Recommend extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: Container(
-        height: ScreenUtil().setHeight(330),
+        height: ScreenUtil().setWidth(330),
         width: ScreenUtil().setWidth(250),
         padding: EdgeInsets.all(8.0),
         decoration: BoxDecoration(
@@ -362,7 +348,7 @@ class Recommend extends StatelessWidget {
 
   Widget _recommedList() {
     return Container(
-      height: ScreenUtil().setHeight(330),
+      height: ScreenUtil().setWidth(330),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: recommendList.length,
@@ -376,7 +362,7 @@ class Recommend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: ScreenUtil().setHeight(410),
+      height: ScreenUtil().setWidth(390),
       margin: EdgeInsets.only(top: 10.0),
       child: Column(
         children: <Widget>[
