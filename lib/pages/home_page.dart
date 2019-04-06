@@ -75,21 +75,19 @@ class _HomePageState extends State<HomePage>
                       _hotGoods(),
                     ],
                   ),
-                  loadMore: () async {
-                    print('开始加载更多');
-                    var formData = {
-                      'page': page,
-                    };
-                    request('homePageBelowConten', formData: formData)
-                        .then((val) {
-                      var data = json.decode(val.toString());
-                      List<Map> newGoodsList = (data['data'] as List).cast();
-                      setState(() {
-                        hotGoodsList.addAll(newGoodsList);
-                        page++;
-                      });
-                    });
-                  },
+                  loadMore: () => request(
+                        'homePageBelowConten',
+                        formData: {
+                          'page': page,
+                        },
+                      ).then((val) {
+                        var data = json.decode(val.toString());
+                        List<Map> newGoodsList = (data['data'] as List).cast();
+                        setState(() {
+                          hotGoodsList.addAll(newGoodsList);
+                          page++;
+                        });
+                      }),
                 );
               } else {
                 return Center(
