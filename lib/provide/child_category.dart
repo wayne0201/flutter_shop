@@ -6,7 +6,19 @@ class ChildCategory with ChangeNotifier{
   List<BxMallSubDto> _childCategoryList = [];
   List<BxMallSubDto> get childCategoryList => _childCategoryList;
 
-  getChildCategory(List<BxMallSubDto> list) {
+  int _childIndex = 0;
+  int get childIndex => _childIndex;
+
+  String _categoryId;
+  String get categoryId => _categoryId;
+
+  String _subId;
+  String get subId => _subId;
+
+
+  getChildCategory(List<BxMallSubDto> list, String id) {
+    _childIndex = 0;
+    _categoryId = id;
     BxMallSubDto all = BxMallSubDto();
     all.mallSubId = '00';
     all.mallCategoryId = '00';
@@ -14,6 +26,12 @@ class ChildCategory with ChangeNotifier{
     all.mallSubName = '全部';
     _childCategoryList = [all];
     _childCategoryList.addAll(list);
+    notifyListeners();
+  }
+
+  changeChildIndex(int index, String id) {
+    _childIndex = index;
+    _subId = id;
     notifyListeners();
   }
 }
