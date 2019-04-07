@@ -162,13 +162,11 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Widget _hotGoods() {
-    return Container(
-      child: Column(
-        children: <Widget>[_hotTitle(), _wrapList()],
-      ),
-    );
-  }
+  Widget _hotGoods() => Container(
+        child: Column(
+          children: <Widget>[_hotTitle(), _wrapList()],
+        ),
+      );
 }
 
 // 首页轮播组件
@@ -183,12 +181,10 @@ class SwiperDiy extends StatelessWidget {
       height: ScreenUtil().setWidth(333),
       width: ScreenUtil().setWidth(750),
       child: Swiper(
-        itemBuilder: (BuildContext content, int index) {
-          return Image.network(
-            "${swiperDateList[index]['image']}",
-            fit: BoxFit.fill,
-          );
-        },
+        itemBuilder: (BuildContext content, int index) => Image.network(
+              "${swiperDateList[index]['image']}",
+              fit: BoxFit.fill,
+            ),
         itemCount: swiperDateList.length,
         pagination: SwiperPagination(),
         autoplay: true,
@@ -201,25 +197,6 @@ class TopNavigator extends StatelessWidget {
   final List navigatorList;
 
   TopNavigator({Key key, this.navigatorList}) : super(key: key);
-
-  Widget _gridViewItemUI(BuildContext context, item) {
-    return InkWell(
-      onTap: () {
-        print("点击了导航");
-      },
-      child: Column(
-        children: <Widget>[
-          Image.network(
-            item["image"],
-            width: ScreenUtil().setWidth(95),
-          ),
-          Text(
-            item["mallCategoryName"],
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -239,6 +216,23 @@ class TopNavigator extends StatelessWidget {
       ),
     );
   }
+
+  Widget _gridViewItemUI(BuildContext context, item) => InkWell(
+        onTap: () {
+          print("点击了导航");
+        },
+        child: Column(
+          children: <Widget>[
+            Image.network(
+              item["image"],
+              width: ScreenUtil().setWidth(95),
+            ),
+            Text(
+              item["mallCategoryName"],
+            ),
+          ],
+        ),
+      );
 }
 
 class AdBanner extends StatelessWidget {
@@ -284,78 +278,7 @@ class LeaderPhone extends StatelessWidget {
 
 class Recommend extends StatelessWidget {
   final List recommendList;
-
   Recommend({Key key, this.recommendList}) : super(key: key);
-
-  Widget _titleWidget() {
-    return Container(
-      alignment: Alignment.centerLeft,
-      padding: EdgeInsets.fromLTRB(10.0, 5.0, 0, 5.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            width: 1,
-            color: Colors.black12,
-          ),
-        ),
-      ),
-      child: Text(
-        '商品推荐',
-        style: TextStyle(color: Colors.pink),
-      ),
-    );
-  }
-
-  Widget _item(index) {
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        height: ScreenUtil().setWidth(330),
-        width: ScreenUtil().setWidth(250),
-        padding: EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            left: BorderSide(
-              width: 1,
-              color: Colors.black12,
-            ),
-          ),
-        ),
-        child: Column(
-          children: <Widget>[
-            Image.network(
-              recommendList[index]['image'],
-            ),
-            Text(
-              "￥${recommendList[index]['mallPrice']}",
-            ),
-            Text(
-              "￥${recommendList[index]['mallPrice']}",
-              style: TextStyle(
-                decoration: TextDecoration.lineThrough,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _recommedList() {
-    return Container(
-      height: ScreenUtil().setWidth(330),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: recommendList.length,
-        itemBuilder: (context, index) {
-          return _item(index);
-        },
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +293,68 @@ class Recommend extends StatelessWidget {
       ),
     );
   }
+
+  Widget _titleWidget() => Container(
+        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.fromLTRB(10.0, 5.0, 0, 5.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              width: 1,
+              color: Colors.black12,
+            ),
+          ),
+        ),
+        child: Text(
+          '商品推荐',
+          style: TextStyle(color: Colors.pink),
+        ),
+      );
+
+  Widget _item(index) => InkWell(
+        onTap: () {},
+        child: Container(
+          height: ScreenUtil().setWidth(330),
+          width: ScreenUtil().setWidth(250),
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              left: BorderSide(
+                width: 1,
+                color: Colors.black12,
+              ),
+            ),
+          ),
+          child: Column(
+            children: <Widget>[
+              Image.network(
+                recommendList[index]['image'],
+              ),
+              Text(
+                "￥${recommendList[index]['mallPrice']}",
+              ),
+              Text(
+                "￥${recommendList[index]['mallPrice']}",
+                style: TextStyle(
+                  decoration: TextDecoration.lineThrough,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _recommedList() => Container(
+        height: ScreenUtil().setWidth(330),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: recommendList.length,
+          itemBuilder: (context, index) => _item(index),
+        ),
+      );
 }
 
 class FloorTitle extends StatelessWidget {
@@ -403,38 +388,32 @@ class FloorContent extends StatelessWidget {
     );
   }
 
-  Widget _firstRow() {
-    return Row(
-      children: <Widget>[
-        _goodItem(floorGoodList[0]),
-        Column(
-          children: <Widget>[
-            _goodItem(floorGoodList[1]),
-            _goodItem(floorGoodList[2]),
-          ],
+  Widget _firstRow() => Row(
+        children: <Widget>[
+          _goodItem(floorGoodList[0]),
+          Column(
+            children: <Widget>[
+              _goodItem(floorGoodList[1]),
+              _goodItem(floorGoodList[2]),
+            ],
+          ),
+        ],
+      );
+
+  Widget _otherGoods() => Row(
+        children: <Widget>[
+          _goodItem(floorGoodList[3]),
+          _goodItem(floorGoodList[4]),
+        ],
+      );
+
+  Widget _goodItem(Map goods) => Container(
+        width: ScreenUtil().setWidth(375),
+        child: InkWell(
+          onTap: () {
+            print('点击了楼层商品');
+          },
+          child: Image.network(goods['image']),
         ),
-      ],
-    );
-  }
-
-  Widget _otherGoods() {
-    return Row(
-      children: <Widget>[
-        _goodItem(floorGoodList[3]),
-        _goodItem(floorGoodList[4]),
-      ],
-    );
-  }
-
-  Widget _goodItem(Map goods) {
-    return Container(
-      width: ScreenUtil().setWidth(375),
-      child: InkWell(
-        onTap: () {
-          print('点击了楼层商品');
-        },
-        child: Image.network(goods['image']),
-      ),
-    );
-  }
+      );
 }
