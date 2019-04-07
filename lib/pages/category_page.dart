@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provide/provide.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
 
 import '../service/service_method.dart';
 import '../model/category.dart';
@@ -76,11 +77,12 @@ class _LeftCategoryNavState extends State<LeftCategoryNav> {
         });
         Provide.value<ChildCategory>(context).getChildCategory(
             categoryList[0].bxMallSubDto, categoryList[0].mallCategoryId);
-        _getGoodsList(categoryList[0].mallCategoryId);
+        _getGoodsList();
       });
 
-  void _getGoodsList(String categoryId) async {
+  void _getGoodsList() async {
     try {
+      String categoryId = Provide.value<ChildCategory>(context).categoryId;
       String res = await getGoodsList(categoryId);
       Map data = json.decode(res.toString());
       CategoryGoodsListModel goods = CategoryGoodsListModel.fromJson(data);
@@ -120,7 +122,7 @@ class _LeftCategoryNavState extends State<LeftCategoryNav> {
           String categoryId = categoryList[index].mallCategoryId;
           Provide.value<ChildCategory>(context)
               .getChildCategory(childList, categoryId);
-          _getGoodsList(categoryId);
+          _getGoodsList();
         },
         child: Container(
           height: ScreenUtil().setHeight(100),
@@ -186,8 +188,7 @@ class _RightCategoryNavState extends State<RightCategoryNav> {
         onTap: () {
           String subId = item.mallSubId;
           Provide.value<ChildCategory>(context).changeChildIndex(index, subId);
-          String categorySubId = subId != "00" ? subId : "";
-          _getGoodsList(categorySubId);
+          _getGoodsList();
         },
         child: Container(
           padding: EdgeInsets.fromLTRB(
@@ -205,17 +206,18 @@ class _RightCategoryNavState extends State<RightCategoryNav> {
           ),
         ),
       );
-  void _getGoodsList(String categorySubId) async {
+  void _getGoodsList() async {
     try {
       String categoryId = Provide.value<ChildCategory>(context).categoryId;
+      String subId = Provide.value<ChildCategory>(context).subId;
+      String categorySubId = subId != "00" ? subId : "";
       String res = await getGoodsList(categoryId, categorySubId: categorySubId);
       Map data = json.decode(res.toString());
       CategoryGoodsListModel goods = CategoryGoodsListModel.fromJson(data);
 
-      List<CategoryGoodsData> goodsList =
-          (goods.data.runtimeType.toString() == 'List<CategoryGoodsData>')
-              ? goods.data
-              : [];
+      bool isNoMore = goods.data == null;
+      List<CategoryGoodsData> goodsList = isNoMore ? [] : goods.data;
+
       Provide.value<CategoryGoodsProvide>(context).getGoodsList(goodsList);
     } catch (e) {
       return print('[ERROR]:====>$e');
@@ -229,20 +231,74 @@ class CategoryGoodsList extends StatefulWidget {
 }
 
 class _CategoryGoodsListState extends State<CategoryGoodsList> {
+  GlobalKey<RefreshFooterState> _footerkey = GlobalKey<RefreshFooterState>();
+
+  ScrollController scrollController = ScrollController();
+
+  void _getMoreGoodsList() async {
+    try {
+      Provide.value<ChildCategory>(context).addPage();
+      String categoryId = Provide.value<ChildCategory>(context).categoryId;
+      String categorySubId = Provide.value<ChildCategory>(context).subId;
+      int page = Provide.value<ChildCategory>(context).page;
+      String res = await getGoodsList(categoryId,
+          categorySubId: categorySubId, page: page);
+      Map data = json.decode(res.toString());
+      CategoryGoodsListModel goods = CategoryGoodsListModel.fromJson(data);
+      bool isNoMore = goods.data == null;
+      List<CategoryGoodsData> goodsList = isNoMore ? [] : goods.data;
+      if (isNoMore) {
+        Provide.value<ChildCategory>(context).changeNoMore('没有更多了');
+      } else {
+        Provide.value<CategoryGoodsProvide>(context).getMoreList(goodsList);
+      }
+    } catch (e) {
+      return print('[ERROR]:====>$e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Provide<CategoryGoodsProvide>(
-        builder: (context, child, data) => (data.goodList.isNotEmpty)
-            ? Container(
-                width: ScreenUtil().setWidth(570),
+        builder: (context, child, data) {
+          try {
+            if ( Provide.value<ChildCategory>(context).page == 1) {
+              scrollController.jumpTo(0.0);
+            }
+          } catch (e) {
+            print('进入页面第一次初始化$e');
+          }
+          if (data.goodList.isNotEmpty) {
+            return Container(
+              width: ScreenUtil().setWidth(570),
+              child: EasyRefresh(
+                refreshFooter: ClassicsFooter(
+                  key: _footerkey,
+                  bgColor: Colors.white,
+                  textColor: Colors.pink,
+                  moreInfoColor: Colors.pink,
+                  noMoreText: Provide.value<ChildCategory>(context).noMoreText,
+                  moreInfo: '加载中',
+                  loadReadyText: '上拉加载...',
+                ),
                 child: ListView.builder(
+                  controller: scrollController,
                   itemCount: data.goodList.length,
                   itemBuilder: (context, index) =>
                       _listWidget(data.goodList, index),
                 ),
-              )
-            : Center(child: Text('暂时没有数据！')),
+                loadMore: () {
+                  _getMoreGoodsList();
+                },
+              ),
+            );
+          } else {
+            return Center(
+              child: Text('暂时没有数据！'),
+            );
+          }
+        },
       ),
     );
   }

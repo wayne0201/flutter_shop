@@ -9,14 +9,22 @@ class ChildCategory with ChangeNotifier{
   int _childIndex = 0;
   int get childIndex => _childIndex;
 
-  String _categoryId;
+  String _categoryId = "";
   String get categoryId => _categoryId;
 
-  String _subId;
+  String _subId = "";
   String get subId => _subId;
+
+  int _page = 1;
+  int get page => _page;
+
+  String _noMoreText = "";
+  String get noMoreText => _noMoreText;
 
 
   getChildCategory(List<BxMallSubDto> list, String id) {
+    _page = 1;
+    _noMoreText = "";
     _childIndex = 0;
     _categoryId = id;
     BxMallSubDto all = BxMallSubDto();
@@ -30,8 +38,20 @@ class ChildCategory with ChangeNotifier{
   }
 
   changeChildIndex(int index, String id) {
+    _page = 1;
+    _noMoreText = "";
     _childIndex = index;
     _subId = id;
     notifyListeners();
   }
+
+  addPage() {
+    _page++;
+  }
+
+  changeNoMore(String text) {
+    _noMoreText = text;
+    notifyListeners();
+  }
+
 }
