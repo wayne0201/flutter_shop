@@ -34,12 +34,13 @@ class CategoryGoodsData {
   String goodsName;
   String goodsId;
 
-  CategoryGoodsData(
-      {this.image,
-      this.oriPrice,
-      this.presentPrice,
-      this.goodsName,
-      this.goodsId});
+  CategoryGoodsData({
+    this.image,
+    this.oriPrice,
+    this.presentPrice,
+    this.goodsName,
+    this.goodsId,
+  });
 
   CategoryGoodsData.fromJson(Map<String, dynamic> json) {
     image = json['image'];
