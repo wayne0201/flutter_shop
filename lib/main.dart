@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provide/provide.dart';
+import 'package:fluro/fluro.dart';
 
 import './provide/counter.dart';
 import './provide/child_category.dart';
@@ -8,11 +9,12 @@ import './provide/category_goods_list.dart';
 import './pages/index_page.dart';
 
 void main() {
-  Counter counter = Counter();
-  ChildCategory childCategory = ChildCategory();
-  CategoryGoodsProvide categoryGoodsProvide = CategoryGoodsProvide();
+  final counter = Counter();
+  final childCategory = ChildCategory();
+  final categoryGoodsProvide = CategoryGoodsProvide();
 
-  Providers providers = Providers();
+  final providers = Providers();
+  final router = Router();
 
   providers
     ..provide(Provider<Counter>.value(counter))

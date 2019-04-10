@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provide/provide.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../service/service_method.dart';
 import '../model/category.dart';
@@ -248,6 +249,14 @@ class _CategoryGoodsListState extends State<CategoryGoodsList> {
       bool isNoMore = goods.data == null;
       List<CategoryGoodsData> goodsList = isNoMore ? [] : goods.data;
       if (isNoMore) {
+        Fluttertoast.showToast(
+          msg: '已经到底了',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Colors.pink,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
         Provide.value<ChildCategory>(context).changeNoMore('没有更多了');
       } else {
         Provide.value<CategoryGoodsProvide>(context).getMoreList(goodsList);
